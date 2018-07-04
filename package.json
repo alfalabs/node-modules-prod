@@ -1,6 +1,6 @@
 {
   "name": "node-modules-prod",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "prepare node_modules for production, convert symlinks, remove clutter",
   "main": "index.js",
   "scripts": {
@@ -17,5 +17,9 @@
     "raspberrypi"
   ],
   "author": "alfalabs.net",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "fs-extra": "^6.0.1",
+    "micromatch": "^3.1.10"
+  }
 }
