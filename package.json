@@ -13,7 +13,8 @@
   "keywords": [
     "node_modules",
     "symlink",
-    "gulp"
+    "gulp",
+    "raspberrypi"
   ],
   "author": "alfalabs.net",
   "license": "ISC"
