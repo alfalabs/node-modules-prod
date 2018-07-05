@@ -20,6 +20,7 @@ module.exports = walkDirsSync;
                             },
  *                      onCondition(dirItem, _opts) - OPTIONAL function, do something with the dirItem
  *                      getDirIgnore(dirItemPath) reads file containing ignore list in the folder (like .npmignore) and returns array
+ *                      log(dirItemPath, type)
  *                  }
  * @param {Object} opts - {
  *                      makeArr: default true,  block folder array creation to save memory when only onCondition is needed
@@ -58,8 +59,14 @@ function walkDirsSync(rootDir, callbacks, opts, dirsArr, count, ignoreList){
                     var dirIgnore = typeof callbacks.getDirIgnore==='function' ? callbacks.getDirIgnore(dirItemPath) : null;
                     walkDirsSync(dirItemPath, callbacks, opts, dirsArr, count, dirIgnore);
                 }
-            } else {count.out++;}
-
+                // 3. log
+                log(dirItemPath, 'in');
+            } else {
+                count.out++; 
+                log(dirItemPath, 'out-byCondition');} // ignored by condition
+        } else {
+            count.out++; 
+            log(dirItemPath, 'out-byNpmignore'); // ignored by npmignore
         }
     });
 
@@ -76,5 +83,9 @@ function walkDirsSync(rootDir, callbacks, opts, dirsArr, count, ignoreList){
         count.in++;
         if(opts.makeArr) dirsArr.push(dirItemPath);
         if(typeof callbacks.onCondition==='function') callbacks.onCondition(dirItemPath, _opts);
+    }
+
+    function log(){
+        if (typeof callbacks.log==='function') callbacks.log.apply(this, arguments);
     }
 }

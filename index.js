@@ -4,6 +4,7 @@ const path = require('path');
 const mm = require('micromatch');
 const ignoreArr = require('./ignore');
 const walkDirsSync = require('./walk-dirs-sync');
+const log2file = require('./log-2-file');
 
 
 /**
@@ -17,7 +18,8 @@ const walkDirsSync = require('./walk-dirs-sync');
  *                  useNpmignore
  *                  noIgnoreList
  *                  packageDir - OPTIONAL, dir name for package.json when not in dev root
- *                  logIgnored - show ignored items in console in blue color
+ *                  logIgnored - show ignored items in console (magenta - ignored by condition, cyan - ignored by .npmignore)
+ *                  logToFile
  *             }
  * @param {*} cb for gulp task
  */
@@ -53,6 +55,8 @@ module.exports = function(sourceRoot, destinationRoot, options, cb){
     // }
     var ignoreLst = ignoreListSplit(ignoreArr);
    
+    var logF;
+    if(options.logToFile){logF = log2file('./LOGS', ['copied', 'excluded-byCondition', 'excluded-byNpmignore']);}
 
     var walkDirCallbacks = {
 
@@ -77,6 +81,7 @@ module.exports = function(sourceRoot, destinationRoot, options, cb){
 
             function prntIgnored(){
                 if(options.logIgnored) console.log(`\x1b[35m ${dirItemPath}  <- \x1b[0m`);
+                //if(options.logToFile) logF.writeLine('excluded', dirItemPath);
             }
         },
 
@@ -90,6 +95,7 @@ module.exports = function(sourceRoot, destinationRoot, options, cb){
                 var _source = dirItemPath;
                 var dest = path.join(destinationRoot, dirItemPath);
                 //if(!options.quiet) console.log(_source, ' -> ', dest); // log every file
+                if(options.logToFile) logF.writeLine('copied', _source, ' -> ', dest);
               
                 try{
                     fs.copySync(_source, dest, {dereference: true}); // copy and dereference -break symbolic link
@@ -97,8 +103,10 @@ module.exports = function(sourceRoot, destinationRoot, options, cb){
             } else {
                 var c='', a='->';
                 if (opts.lstat.isSymbolicLink()) {c='\x1b[34m'; a='=>'; symLinkCount++;}
+                var msg = `${dirItemPath}  ${a}  ${path.join(destinationRoot, dirItemPath)}`;
                 if(!options.quiet) 
-                    console.log(`${c} ${dirItemPath}  ${a}  ${path.join(destinationRoot, dirItemPath)} \x1b[0m`); // log only dirs
+                    console.log(`${c} ${msg} \x1b[0m`); // log only dirs
+                if(options.logToFile) logF.writeLine('copied', msg);
             }
         },
 
@@ -116,6 +124,21 @@ module.exports = function(sourceRoot, destinationRoot, options, cb){
                 npmIgnore = npmIgnore.split(',');
             }
             return npmIgnore; // returns Array or falsy
+        },
+
+        log: function(){
+            // var args = [].slice.call(arguments);
+            var dirItemPath = arguments[0];
+            var type = arguments[1];
+            if(options.logToFile){
+                switch (type){
+                    case 'in': break;
+                    case 'out-byCondition': logF.writeLine('excluded-byCondition', dirItemPath); break;
+                    case 'out-byNpmignore': logF.writeLine('excluded-byNpmignore', dirItemPath); break;
+                    // default: 
+                }
+            }
+            if(options.logIgnored && type==='out-byNpmignore') console.log(`\x1b[36m ${dirItemPath}  <- \x1b[0m`); 
         }
     };
     var root = path.join(sourceRoot, dirName);

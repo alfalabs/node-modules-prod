@@ -1,6 +1,6 @@
 {
   "name": "node-modules-prod",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "prepare node_modules for production, convert symlinks, remove clutter",
   "main": "index.js",
   "scripts": {
@@ -12,6 +12,10 @@
   },
   "keywords": [
     "node_modules",
+    "nodejs-modules",
+    "production",
+    "symbolic-link",
+    "clutterremoval",
     "symlink",
     "gulp",
     "raspberrypi"
@@ -19,6 +23,7 @@
   "author": "alfalabs.net",
   "license": "ISC",
   "dependencies": {
+    "dateformat": "^3.0.3",
     "fs-extra": "^6.0.1",
     "micromatch": "^3.1.10"
   }
